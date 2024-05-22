@@ -1,17 +1,19 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {IProduct, IProductFilterPayload} from "@Shared/types"
+import { IProduct, IProductFilterPayload, IComment } from "@Shared/types";
 import axios from "axios";
-
 
 interface ProductOverview {
     count?: number;
     sum?: number;
 }
 
+type CommentCreatePayload = Omit<IComment, "id">;
+
 interface ProductsState {
     overview: ProductOverview | null;
     products: IProduct[];
     productById: IProduct;
+    loading: boolean;
 }
 
 export const fetchInfo = createAsyncThunk<
@@ -116,98 +118,86 @@ export const fetchProductById = createAsyncThunk<
     }
 });
 
+export const saveComment = createAsyncThunk<
+    IComment,
+    CommentCreatePayload,
+    {
+        rejectValue: { message: string; status: string | undefined };
+    }
+>("products/saveComment", async (comment, { rejectWithValue }) => {
+    try {
+        const { data } = await axios.post<IComment>(`api/comments`, comment);
+        return data || [];
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            return rejectWithValue({
+                message: err.message,
+                status: err.response?.status?.toString(),
+            });
+        } else {
+            return rejectWithValue({
+                message: (err as Error).message,
+                status: undefined,
+            });
+        }
+    }
+});
+
 const initialState: ProductsState = {
     overview: {},
     products: [],
     productById: {} as IProduct,
+    loading: false,
 };
 
 const productsSlice = createSlice({
     name: "products",
     initialState,
     reducers: {
-        // setSortingType(
-        //     state,
-        //     action: PayloadAction<"price" | "duration" | "optimal">
-        // ) {
-        //     state.currentSorting = action.payload;
-        // },
-        // sortTickets(state) {
-        //     switch (state.currentSorting) {
-        //         case "price":
-        //             state.filteredTickets.sort((a, b) => a.price - b.price);
-        //             break;
-        //         case "duration":
-        //             state.filteredTickets = sortByDuration(state.filteredTickets);
-        //             break;
-        //         case "optimal":
-        //             state.filteredTickets.sort((a, b) => {
-        //                 if (a.connectionAmount !== b.connectionAmount)
-        //                     return a.connectionAmount - b.connectionAmount;
-        //                 return a.price - b.price;
-        //             });
-        //             break;
-        //         default:
-        //             console.log('No sorting applied. Invalid sorting option:', state.currentSorting);
-        //     }
-        // },
-        // setDisplayedFilters(
-        //     state,
-        //     action: PayloadAction<{
-        //         connectionsFilter: number[];
-        //         companyFilter: string[];
-        //     }>
-        // ) {
-        //     const { connectionsFilter, companyFilter } = action.payload;
-        //     state.displayedFilters = [];
-        //     if (connectionsFilter.length !== 0) {
-        //         state.displayedFilters.push(
-        //             `Кол-во пересадок: ${connectionsFilter.join(", ")}`
-        //         );
-        //     } else {
-        //         state.displayedFilters.push("любое кол-во пересадок");
-        //     }
-        //     if (companyFilter.length !== 0) {
-        //         state.displayedFilters.push(
-        //             `Авиакомпания: ${companyFilter.join(", ")}`
-        //         );
-        //     } else {
-        //         state.displayedFilters.push("любая авиакомпания");
-        //     }
-        // },
-        // filterTickets(
-        //     state,
-        //     action: PayloadAction<{
-        //         connectionsFilter: number[];
-        //         companyFilter: string[];
-        //     }>
-        // ) {
-        //     const { connectionsFilter, companyFilter } = action.payload;
-        //     state.filteredTickets = state.tickets.filter(
-        //         (ticket) =>
-        //             (!connectionsFilter.length ||
-        //                 connectionsFilter.includes(ticket.connectionAmount)) &&
-        //             (!companyFilter.length || companyFilter.includes(ticket.company))
-        //     );
-        // },
+        // add your reducers here
     },
     extraReducers: (builder) => {
-        builder.addCase(
-            fetchInfo.fulfilled,
-            (state, action) => {
+        builder
+            .addCase(fetchInfo.fulfilled, (state, action) => {
+                state.loading = false;
                 state.overview = action.payload;
-            }
-        )
-        .addCase(fetchProducts.fulfilled, (state, action) => {
-            state.products = action.payload;
-        })
-        .addCase(fetchFilteredProducts.fulfilled, (state, action) => {
-            state.products = action.payload;
-            console.log("Filtered products fetched:", action.payload);
-        })
-        .addCase(fetchProductById.fulfilled, (state, action) => {
-            state.productById = action.payload;
-        });
+            })
+            .addCase(fetchInfo.rejected, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchInfo.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = action.payload;
+            })
+            .addCase(fetchProducts.rejected, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchProducts.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchFilteredProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = action.payload;
+            })
+            .addCase(fetchFilteredProducts.rejected, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchFilteredProducts.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchProductById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.productById = action.payload;
+            })
+            .addCase(fetchProductById.rejected, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchProductById.pending, (state) => {
+                state.loading = true;
+            });
     },
 });
 

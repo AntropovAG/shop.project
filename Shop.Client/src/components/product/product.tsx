@@ -2,27 +2,34 @@ import styles from './product.module.css';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../utils/hooks';
-import { fetchProductById } from '../../redux/productsSlice';
+import { fetchProductById, saveComment } from '../../redux/productsSlice';
+import Loader from '../loader/loader';
+import { Link } from 'react-router-dom';
 
 export default function Product() {
     const { id } = useParams<{ id: string }>();
     const dispatch = useAppDispatch();
     const product = useAppSelector((state) => state.products.productById);
-    const { title, description, price, thumbnail, comments, images, similarProducts } = product;
+    const loading = useAppSelector((state) => state.products.loading);
+    const {title, description, price, thumbnail, comments, images, similarProducts } = product;
     const [comment, setComment] = useState({
         name: "",
         email: "",
         body: "",
     });
 
-    const onButtonClick = (id:string) => {
-        if (id !== undefined)
-            dispatch(fetchProductById(id));
-    };
-
     const handleCommentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(comment);
+        if (id !== undefined) {
+        const commentSet = { ...comment, productId: id };
+        dispatch(saveComment(commentSet));
+        setComment({
+            name: "",
+            email: "",
+            body: "",
+        });
+        dispatch(fetchProductById(id));
+    }
     };
 
     const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -36,10 +43,11 @@ export default function Product() {
     useEffect(() => {
         if (id !== undefined)
             dispatch(fetchProductById(id));
-    }, []);
+    }, [id, dispatch]);
 
     return (
         <main className={styles.container}>
+            {loading && <Loader />}
             <h2 className={styles.title}>{title}</h2>
             <img className={styles.mainImg} src={thumbnail ? thumbnail.url : "/product-placeholder.png"} alt="product image" />
             {images &&
@@ -54,10 +62,10 @@ export default function Product() {
                     Похожие товары
                     {similarProducts.map((product) =>
                     (<li>
-                        <a className={styles.similarProduct} onClick={()=>onButtonClick(product.id)}>
+                        <Link className={styles.similarProduct} to={`/${product.id}`}>
                             <p className={styles.text}>{product.title}</p>
                             <p className={styles.price}>{product.price} &#8381;</p>
-                        </a>
+                        </Link>
                     </li>))}
                 </ul>)}
 
@@ -73,9 +81,9 @@ export default function Product() {
                 </ul>)}
 
             <form className={styles.form} onSubmit={handleCommentSubmit}>
-                <input className={styles.input} type="text" name='name' placeholder="Заголовок" onChange={handleCommentChange} />
-                <input className={styles.input} type="text" name='email' placeholder="Email" onChange={handleCommentChange} />
-                <textarea className={styles.textArea} name='body' placeholder="Ваш комментарий" onChange={handleCommentChange} />
+                <input className={styles.input} type="text" name='name' placeholder="Заголовок" onChange={handleCommentChange} value={comment.name} />
+                <input className={styles.input} type="text" name='email' placeholder="Email" onChange={handleCommentChange} value={comment.email}/>
+                <textarea className={styles.textArea} name='body' placeholder="Ваш комментарий" onChange={handleCommentChange} value={comment.body}/>
                 <button className={styles.button}>Сохранить</button>
             </form>
         </main>

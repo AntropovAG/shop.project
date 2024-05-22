@@ -3,10 +3,12 @@ import ListItem from '../listItem/listItem';
 import { useAppDispatch, useAppSelector } from '../../utils/hooks';
 import { fetchProducts, fetchFilteredProducts } from '../../redux/productsSlice';
 import { useState, useEffect } from 'react';
+import Loader from '../loader/loader';
 
 export default function ProductsList() {
 const dispatch = useAppDispatch();
 const products = useAppSelector((state) => state.products.products);
+const loading = useAppSelector((state) => state.products.loading);
 const [filter, setFilter] = useState({
     title: "",
     description: "",
@@ -46,6 +48,7 @@ console.log("Products in app:", products);
                 <input className={styles.input} type="number" placeholder="Цена до" name='priceTo' onChange={handleFilterChange} />
                 <button className={styles.button}>Поиск</button>
             </form>
+            {loading && <Loader />}
             <ul className={styles.list}>
                 {products.map((product) => 
                 (<ListItem key={product.id} product={product} />)) || "No products found"}
