@@ -15,6 +15,10 @@ async function launchApplication() {
     connection = await initDataBase();
 
     initRouter();
+
+    server.get('/', (_, res) => {
+        res.sendFile(path.join(__dirname, './Shop.Client/dist', 'index.html'));
+    });
 }
 
 function initRouter() {
@@ -24,8 +28,11 @@ function initRouter() {
     const shopAdmin = ShopAdmin();
     server.use("/admin", shopAdmin);
 
-    server.use("/", (_, res) => {
-        res.send("React App");
+    const reactAppPath = path.join(__dirname, 'Shop.Client/dist');
+    server.use(express.static(reactAppPath));
+
+    server.get('/', (_, res) => {
+        res.sendFile(path.join(reactAppPath, 'index.html'));
     });
 }
 

@@ -77,35 +77,37 @@ productsRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
-productsRouter.get(
-  "/search",
-  async (req: Request<{}, {}, {}, IProductSearchFilter>, res: Response) => {
-    try {
-      const [query, values] = getProductsFilterQuery(req.query);
-      const [rows] = await connection.query<IProductEntity[]>(query, values);
-
-      if (!rows?.length) {
-        res.send([]);
-        return;
-      }
-
-      const [commentRows] = await connection.query<ICommentEntity[]>(
-        "SELECT * FROM comments"
-      );
-      const [imageRows] = await connection.query<IProductImageEntity[]>(
-        "SELECT * FROM images"
-      );
-
-      const products = mapProductsEntity(rows);
-      const withComments = enhanceProductsComments(products, commentRows);
-      const withImages = enhanceProductsImages(withComments, imageRows);
-
-      res.send(withImages);
-    } catch (e) {
-      throwServerError(res, e);
+productsRouter.get('/search', async (
+  req: Request<{}, {}, {}, IProductSearchFilter>,
+  res: Response
+) => {
+  try {
+    if (!Object.keys(req.query).length) {
+      res.status(400);
+      res.send("Filter is empty");
+      return;
     }
+
+    const [query, values] = getProductsFilterQuery(req.query);
+    const [rows] = await connection.query<IProductEntity[]>(query, values);
+
+    if (!rows?.length) {
+      res.send([]);
+      return;
+    }
+
+    const [commentRows] = await connection.query<ICommentEntity[]>("SELECT * FROM comments");
+    const [imageRows] = await connection.query<IProductImageEntity[]>("SELECT * FROM images");
+
+    const products = mapProductsEntity(rows);
+    const withComments = enhanceProductsComments(products, commentRows);
+    const withImages = enhanceProductsImages(withComments, imageRows)
+
+    res.send(withImages);
+  } catch (e) {
+    throwServerError(res, e);
   }
-);
+});
 
 productsRouter.get(
   "/:id",

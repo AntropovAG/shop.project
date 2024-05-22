@@ -1,7 +1,111 @@
 .container {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     margin: 0 auto;
     gap: 20px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.mainImg {
+    width: auto;
+    height: 300px;
+    object-fit: cover;
+}
+
+.list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+}
+
+.smallImg {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.text {
+    margin: 0;
+    padding-bottom: 5px;
+    text-align: left;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.similarProduct {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: black;
+    width: 150px;
+    border: 1px solid;
+    box-shadow: 5px 2px 2px rgb(81, 106, 175);
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.commentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+}
+
+.commentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid;
+    box-shadow: 5px 2px 2px rgb(81, 106, 175);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+
+.input {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid rgb(81, 106, 175);
+    border-radius: 5px;
+}
+
+.textArea {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid rgb(81, 106, 175);
+    border-radius: 5px;
+}
+
+.button {
+    padding: 10px 20px;
+    background-color: rgb(81, 106, 175);
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: rgb(61, 86, 155);
+    cursor: pointer;
 }
