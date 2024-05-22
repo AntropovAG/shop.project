@@ -38,6 +38,23 @@ const throwServerError = (res: Response, e: Error) => {
   res.send("Something went wrong");
 };
 
+productsRouter.get("/overview", async (req: Request, res: Response) => {
+  try {
+    const [productsCount] = await connection.query(
+      "SELECT COUNT(*) as count FROM products"
+    );
+    const [productsSum] = await connection.query(
+      "SELECT SUM(price) as sum FROM products"
+    );
+
+    const result = {count: productsCount[0].count, sum: productsSum[0].sum};
+    res.send(result);
+  }
+  catch (e) {
+    throwServerError(res, e);
+  }
+});
+
 productsRouter.get("/", async (req: Request, res: Response) => {
   try {
     const [productRows] = await connection.query<IProductEntity[]>(
@@ -210,6 +227,11 @@ productsRouter.delete(
         res.send(`Product with id ${req.params.id} is not found`);
         return;
       }
+
+      await connection.query<OkPacket>(
+        "DELETE FROM similar_products WHERE product_id IN (?) OR similar_product_id IN (?)",
+        [req.params.id, req.params.id]
+      );
 
       await connection.query<OkPacket>(
         "DELETE FROM images WHERE product_id = ?",

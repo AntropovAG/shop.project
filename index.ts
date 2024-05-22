@@ -1,10 +1,11 @@
 require('dotenv').config();
-import { Express } from "express";
+import express, { Express } from "express";
 import { Connection } from "mysql2/promise";
 import { initDataBase } from "./Server/Services/db";
 import { initServer } from "./Server/Services/server";
 import ShopAPI from "./Shop.API";
 import ShopAdmin from "./Shop.Admin";
+import path from 'path';
 
 export let server: Express;
 export let connection: Connection;
